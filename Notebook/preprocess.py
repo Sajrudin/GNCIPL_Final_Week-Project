@@ -2,70 +2,47 @@ import pandas as pd
 import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
-from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
 
-# Load dataset
-df = pd.read_csv(r'C:\Users\ACER\Desktop\Projects\Finance\Data\Bank_Transaction.csv')
-
 # -----------------------------
-# Step 1: Define column groups
+# Feature groups
 # -----------------------------
-numeric_features = [
-    'Age', 'Transaction_Amount', 'Account_Balance'
-]
+numeric_features = ['Age', 'Transaction_Amount', 'Account_Balance']
 
+# High-cardinality IDs to be frequency encoded
+high_card_features = ['Customer_ID', 'Transaction_ID', 'Merchant_ID']
+
+# Low-cardinality categorical features (safe for one-hot)
 categorical_features = [
-    'Customer_ID', 'Customer_Name', 'Gender', 'State', 'City',
-    'Bank_Branch', 'Account_Type', 'Transaction_ID', 'Merchant_ID',
-    'Transaction_Type', 'Merchant_Category', 'Transaction_Device',
-    'Transaction_Location', 'Device_Type', 'Transaction_Currency',
-    'Customer_Contact', 'Customer_Email'
+    'Gender', 'State', 'City',
+    'Bank_Branch', 'Account_Type', 'Transaction_Type',
+    'Merchant_Category', 'Transaction_Device',
+    'Transaction_Location', 'Device_Type', 'Transaction_Currency'
 ]
 
-datetime_features = [
-    'Transaction_Date', 'Transaction_Time'
-]
-
-target = 'Is_Fraud'  # For training
+# Datetime features
+datetime_features = ['Transaction_Date', 'Transaction_Time']
 
 # -----------------------------
-# Step 2: Define preprocessing pipelines
+# Custom transformer for datetime
 # -----------------------------
-
-# Numeric pipeline
-numeric_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='median')),   # Fill missing numeric values
-    ('scaler', StandardScaler())                     # Standardize numeric features
-])
-
-# Categorical pipeline
-categorical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),  # Fill missing with 'missing'
-    ('onehot', OneHotEncoder(handle_unknown='ignore'))                      # One-hot encode categorical
-])
-
-# Datetime pipeline
 def extract_datetime_features(df):
-    """
-    Custom transformer to extract features from datetime columns.
-    Returns year, month, day, hour, minute as separate features.
-    """
     df_ = df.copy()
     if 'Transaction_Date' in df_.columns:
         df_['Transaction_Date'] = pd.to_datetime(df_['Transaction_Date'], errors='coerce')
         df_['Transaction_Year'] = df_['Transaction_Date'].dt.year
         df_['Transaction_Month'] = df_['Transaction_Date'].dt.month
         df_['Transaction_Day'] = df_['Transaction_Date'].dt.day
+        df_['Transaction_Weekday'] = df_['Transaction_Date'].dt.weekday
     if 'Transaction_Time' in df_.columns:
         df_['Transaction_Time'] = pd.to_datetime(df_['Transaction_Time'], format='%H:%M:%S', errors='coerce')
         df_['Transaction_Hour'] = df_['Transaction_Time'].dt.hour
         df_['Transaction_Minute'] = df_['Transaction_Time'].dt.minute
-    return df_[['Transaction_Year','Transaction_Month','Transaction_Day','Transaction_Hour','Transaction_Minute']]
-
-
+        df_['Is_Night'] = df_['Transaction_Hour'].apply(lambda x: 1 if x>=22 or x<6 else 0)
+    return df_[['Transaction_Year','Transaction_Month','Transaction_Day',
+                'Transaction_Weekday','Transaction_Hour','Transaction_Minute','Is_Night']]
 
 class DateTimeExtractor(BaseEstimator, TransformerMixin):
     def __init__(self, datetime_cols):
@@ -77,40 +54,87 @@ class DateTimeExtractor(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return extract_datetime_features(X)
 
-datetime_transformer = Pipeline(steps=[
-    ('extractor', DateTimeExtractor(datetime_features)),
+# -----------------------------
+# Custom transformer for frequency encoding
+# -----------------------------
+class FrequencyEncoder(BaseEstimator, TransformerMixin):
+    def __init__(self, columns=None):
+        self.columns = columns
+        self.freq_maps = {}
+
+    def fit(self, X, y=None):
+        for col in self.columns:
+            self.freq_maps[col] = X[col].value_counts(normalize=True)
+        return self
+
+    def transform(self, X):
+        X_ = X.copy()
+        for col in self.columns:
+            X_[col] = X_[col].map(self.freq_maps[col]).fillna(0)
+        return X_[self.columns]
+
+# -----------------------------
+# Preprocessing pipelines
+# -----------------------------
+numeric_transformer = Pipeline([
+    ('imputer', SimpleImputer(strategy='median')),
     ('scaler', StandardScaler())
 ])
 
-# -----------------------------
-# Step 3: Combine all transformers
-# -----------------------------
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('num', numeric_transformer, numeric_features),
-        ('cat', categorical_transformer, categorical_features),
-        ('dt', datetime_transformer, datetime_features)
-    ]
-)
-
-# -----------------------------
-# Step 4: Full pipeline with optional PCA
-# -----------------------------
-full_pipeline = Pipeline(steps=[
-    ('preprocessor', preprocessor),
-    ('pca', PCA(n_components=0.95, svd_solver='full'))  # Keeps 95% variance
+high_card_transformer = Pipeline([
+    ('freq_enc', FrequencyEncoder(columns=high_card_features))
 ])
 
+categorical_transformer = Pipeline([
+    ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
+    ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
+])
 
-print('Preprocess completed!')
+datetime_transformer = Pipeline([
+    ('extractor', DateTimeExtractor(datetime_features)),
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler())
+])
+
+preprocessor = ColumnTransformer([
+    ('num', numeric_transformer, numeric_features),
+    ('high_card', high_card_transformer, high_card_features),
+    ('cat', categorical_transformer, categorical_features),
+    ('dt', datetime_transformer, datetime_features)
+])
+
 # -----------------------------
-# Step 5: Fit pipeline (example)
+# Full preprocessing function
 # -----------------------------
-# X = df.drop(columns=[target])
-# y = df[target]
+def fit_preprocess(df):
+    full_pipeline = Pipeline([
+        ('preprocessor', preprocessor)
+    ])
+    X_processed = full_pipeline.fit_transform(df)
 
-# full_pipeline.fit(X)
-# X_transformed = full_pipeline.transform(X)
+    # Ensure 2D
+    if X_processed.ndim == 1:
+        X_processed = X_processed.reshape(-1, 1)
 
-# Now `full_pipeline` can also be used for new input from UI:
-# new_input_transformed = full_pipeline.transform(new_input_df)
+    # Engineered ratio feature
+    if 'Transaction_Amount' in df.columns and 'Account_Balance' in df.columns:
+        ratio = (df['Transaction_Amount'] / (df['Account_Balance'] + 1e-5)).values.reshape(-1,1)
+        X_processed = np.hstack([X_processed, ratio])
+
+    return X_processed, full_pipeline
+
+# -----------------------------
+# Transform new data
+# -----------------------------
+def transform(df, pipeline):
+    X_processed = pipeline.transform(df)
+
+    # Ensure 2D
+    if X_processed.ndim == 1:
+        X_processed = X_processed.reshape(-1, 1)
+
+    if 'Transaction_Amount' in df.columns and 'Account_Balance' in df.columns:
+        ratio = (df['Transaction_Amount'] / (df['Account_Balance'] + 1e-5)).values.reshape(-1,1)
+        X_processed = np.hstack([X_processed, ratio])
+
+    return X_processed
