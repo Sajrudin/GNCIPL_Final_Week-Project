@@ -155,21 +155,24 @@ Age, Transaction_Amount, Account_Balance
 # 👨‍💻 **Author**
 
 **Sajrudin Aalam**
-📍 B.Tech CSE, Graphic Era Hill University (2026)
-🔗[LinkedIn Profile](https://www.linkedin.com/in/sajrudin-aalam-21b861287/)
-📧 aalamsajrudin@gmail.com
-
-**Rekha Kumari Bheel**
-📍 B.Tech IT, Govt. Mahila Engineering College,Ajmer (2015)
-🔗[LinkedIn Profile](https://www.linkedin.com/in/rekha-gunarat-7b9459279/)
-
-**Riya Rawat**
-📍 B.Tech CSE, Graphic Era Hill University (2026)
-🔗[LinkedIn Profile](https://www.linkedin.com/in/riya-rawat-bb2b78265/)
+📍 B.Tech CSE, Graphic Era Hill University (2026)  
+🔗[LinkedIn Profile](https://www.linkedin.com/in/sajrudin-aalam-21b861287/)  
+📧 aalamsajrudin@gmail.com  
 
 
-**Payal Dhokane **
-📧 payaldhokane282@gmail.com
+**Rekha Kumari Bheel**  
+📍 B.Tech IT, Govt. Mahila Engineering College,Ajmer (2015)  
+🔗[LinkedIn Profile](https://www.linkedin.com/in/rekha-gunarat-7b9459279/)  
+
+**Riya Rawat**  
+📍 B.Tech CSE, Graphic Era Hill University (2026)  
+🔗[LinkedIn Profile](https://www.linkedin.com/in/riya-rawat-bb2b78265/)  
+
+**Payal Dhokane **  
+📍 B.E CS, International Centre of Excellence in Engineering & Management    
+🔗[LinkedIn Profile](https://www.linkedin.com/in/payal-dhokane-79967b294/)    
+📧 payaldhokane282@gmail.com  
+
 
 
 
