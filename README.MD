@@ -1,6 +1,6 @@
 # 🏦 Advancing Fraud Detection through CTGAN-Based Synthetic Transactions
 
-This project focuses on enhancing fraud detection systems by generating privacy-preserving synthetic bank transactions using CTGAN (Conditional Tabular GAN) and Finance TVAE.
+This project focuses on enhancing fraud detection systems by generating privacy-preserving synthetic bank transactions using CTGAN (Conditional Tabular GAN) .
 The synthetic data augments real-world transactions to address class imbalance and data scarcity, leading to more robust and generalizable fraud detection models.
 
 Generate privacy-preserving synthetic bank transaction data using Finance TVAE to improve fraud detection research and model benchmarking.     
@@ -170,6 +170,7 @@ Age, Transaction_Amount, Account_Balance
 
 **Payal Dhokane **
 📧 payaldhokane282@gmail.com
+
 
 
 
