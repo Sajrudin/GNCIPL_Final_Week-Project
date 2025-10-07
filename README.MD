@@ -1,5 +1,8 @@
 # 🏦 Advancing Fraud Detection through CTGAN-Based Synthetic Transactions
 
+This project focuses on enhancing fraud detection systems by generating privacy-preserving synthetic bank transactions using CTGAN (Conditional Tabular GAN) and Finance TVAE.
+The synthetic data augments real-world transactions to address class imbalance and data scarcity, leading to more robust and generalizable fraud detection models.
+
 Generate privacy-preserving synthetic bank transaction data using Finance TVAE to improve fraud detection research and model benchmarking.     
 
 ---
@@ -14,7 +17,8 @@ Synthetic-Fraud-AI-Project/
 │
 ├── Model/
 │   ├── preprocess_pipeline.pkl          
-│   └── best_model_augmented.pkl  
+│   ├── best_model_augmented.pkl  
+│   └── catboost_best_model.pkl  
 │
 ├── Data/
 │   ├── Bank_Transaction.csv          
@@ -32,89 +36,144 @@ Synthetic-Fraud-AI-Project/
           ├── catboost_training.json
           ├── learn_error.tsv
           └── time_left.tsv
+
 ```
 
 
 ## 🎯 Objective
 
-The objective of this project is to generate synthetic financial transaction data using CTGAN, augment it with real-world transactions, and evaluate its impact on fraud detection. By combining synthetic and authentic data, the goal is to address class imbalance and data scarcity while maintaining privacy. Ultimately, this approach aims to improve the performance and accuracy of machine learning models in detecting fraudulent activities.
+The main goal of this project is to:
+
+    * Generate synthetic financial transactions using CTGAN and Finance TVAE.
+
+    * Combine synthetic and real data to balance the dataset and reduce bias.
+
+    * Train and evaluate multiple machine learning models to measure how synthetic augmentation impacts fraud detection performance.
+
+    * Ensure data privacy and integrity by replacing sensitive data with realistic synthetic equivalents.
 
 ---
+# 🧩 **Problem Definition**
+## **Dataset**
 
-## 👉 Problem Definition & Dataset Selection
+- File: Data/Bank_Transaction.csv
 
-**Dataset:** Bank_Transaction.csv
+- Target Variable: Is_Fraud
 
-**Features:** 
+    * 0 → Legitimate Transaction
 
-Categorical Columns:
-  - Customer_ID  - Customer_Name  - Gender  - State  - City  - Bank_Branch  - Account_Type  - Transaction_ID  - Transaction_Date  - Transaction_Time  - Merchant_ID  - Transaction_Type  - Merchant_Category  - Transaction_Device  - Transaction_Location  - Device_Type  - Transaction_Currency  - Customer_Contact  - Transaction_Description  - Customer_Email
-  
-Numerical Columns:
-   - Age   - Transaction_Amount   - Account_Balance   - Is_Fraud
+    * 1 → Fraudulent Transaction
 
-**Target:** ( 0 = normal transaction, 1 = fraud )
+- Class Distribution:
 
-Class Distribution: (0 = 189912, 1 = 10088)
+    * Legitimate: 189,912 (≈94.96%)
 
-Percentage Distribution: (0 = 94.956, 1 = 5.044)
+    * Fraudulent: 10,088 (≈5.04%)
+
+This severe imbalance leads to poor model recall and limited fraud detection capability.
+
+# **Features Overview**
+
+## Categorical Columns:
+    - Customer_ID, Gender, City, Bank_Branch, Account_Type, Transaction_ID,
+    Transaction_Type, Merchant_Category, Transaction_Device, Transaction_Location,
+    Device_Type, Transaction_Currency, Customer_Email, Transaction_Description, etc.
+
+## Numerical Columns:
+Age, Transaction_Amount, Account_Balance
 
 
-### 📌 Problem Statement:
+# 🧠 **Approach & Methodology**
 
-The dataset suffers from a highly imbalanced class distribution, with only 0.17% of transactions labeled as fraud. This imbalance makes it challenging for machine learning models to effectively learn fraudulent patterns, leading to poor recall and a high risk of undetected fraud.
+1. **Data Preprocessing**
 
-### ⚙️ Library Imports
+    * Handled missing values, encoding, and scaling.
 
-```
-# Standard
-import datetime
-import time
-import collections
-from collections import Counter
-import warnings
-warnings.filterwarnings("ignore")
+    * Split into train-test sets using Stratified Sampling to preserve class ratios.
 
-# Data
-import numpy as np
-import pandas as pd
+    * Implemented a custom preprocessing pipeline (preprocess_pipeline.pkl).
 
-# Visualization
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import seaborn as sns
+2. **Synthetic Data Generation**
 
-# Preprocessing & Decomposition
-from sklearn.preprocessing import LabelEncoder
-from sklearn.decomposition import PCA, TruncatedSVD
-from sklearn.manifold import TSNE
+    * Used Tabular CTGAN  to generate realistic synthetic transactions.
 
-# Model Selection & Pipeline
-from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
-from sklearn.pipeline import make_pipeline
-from imblearn.pipeline import make_pipeline as imbalanced_make_pipeline
+    * Merged synthetic and real data to create the Augmented Dataset.
 
-# Sampling
-from imblearn.over_sampling import SMOTE
-from imblearn.under_sampling import NearMiss
+    * Evaluated synthetic quality metrics (score ≈ 8.5) for realism and privacy.
 
-# Models
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
+3. **Model Training and Tuning**
 
-# Metrics
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, classification_report
-from imblearn.metrics import classification_report_imbalanced
+    * Models were trained on both original and augmented datasets.
 
-import os
-for dirname, _, filenames in os.walk('/kaggle/input'):
-    for filename in filenames:
-        print(os.path.join(dirname, filename))
+    * Hyperparameter tuning performed via RandomizedSearchCV .
 
-# TensorFlow
-import tensorflow as tf
-```
+    * Evaluation metrics: Accuracy, Precision, Recall, and F1-score.
+
+----------------
+# 🤖 **Top 3 Performing Models (on Augmented Data)**
+| Rank | Model                   | F1 Score   | Recall     | Precision | 
+| ---- | ----------------------- | ---------- | ---------- | --------- | 
+| 🥇 1 | **CatBoost Classifier** | **0.2868** | **0.8807** | 0.1713    | 
+| 🥈 2 | **XGBoost Classifier**  | **0.2861** | 0.8302     | 0.1729    | 
+| 🥉 3 | **LightGBM Classifier** | **0.2667** | 0.5772     | 0.1734    | 
+
+---------------
+# 🔍 **Key Findings**
+
+    * CatBoost and XGBoost achieved highest recall (>0.83) — ideal for minimizing missed frauds.
+
+    * LightGBM offered a better balance between recall and precision, making it suitable for production scenarios.
+
+    * Linear models (Logistic Regression, SGD) performed decently but struggled with extreme imbalance.
+
+    * Balanced Random Forest, despite high accuracy, failed to detect minority class effectively.
+
+---------------
+# 💻 **Technologies Used**
+| Category                  | Tools / Libraries                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------------- |
+| Data Processing           | `pandas`, `numpy`, `scikit-learn`, `joblib`                                              |
+| Synthetic Data Generation | `Tabluar CTGAN`,  `gretel-synthetics`                                                    |
+| Machine Learning          | `XGBoost`, `LightGBM`, `CatBoost`, `DecisionTree`, `LogisticRegression`, `SGDClassifier` |
+| Visualization             | `matplotlib`, `plotly`, `seaborn`                                                        |
+| App Interface             | `Streamlit`                                                                              |
+| Environment               | `Python 3.11`, `Anaconda`, `Jupyter Notebooks`, `VS Code`                                |
+
+---------------
+
+# 🚀 **Results & Conclusion**
+
+    * Synthetic data generation using CTGAN improved fraud recall by over 40% compared to models trained on raw data alone.
+
+    * CatBoost emerged as the most recall-efficient model for fraud detection.
+
+    * Combining real and synthetic datasets improved robustness, diversity, and fairness in model training.
+
+    * This approach can serve as a framework for banks and financial institutions seeking privacy-preserving data for fraud detection research and benchmarking.
+
+------------------------
+# 👨‍💻 **Author**
+
+**Sajrudin Aalam**
+📍 B.Tech CSE, Graphic Era Hill University (2026)
+🔗[LinkedIn Profile](https://www.linkedin.com/in/sajrudin-aalam-21b861287/)
+📧 aalamsajrudin@gmail.com
+
+**Rekha Kumari Bheel**
+📍 B.Tech IT, Govt. Mahila Engineering College,Ajmer (2015)
+🔗[LinkedIn Profile](https://www.linkedin.com/in/rekha-gunarat-7b9459279/)
+
+**Riya Rawat**
+📍 B.Tech CSE, Graphic Era Hill University (2026)
+🔗[LinkedIn Profile](https://www.linkedin.com/in/riya-rawat-bb2b78265/)
+
+
+**Payal Dhokane **
+📧 payaldhokane282@gmail.com
+
+
+
+
+
+
 
