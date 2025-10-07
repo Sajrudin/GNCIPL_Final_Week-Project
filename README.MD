@@ -154,8 +154,8 @@ Age, Transaction_Amount, Account_Balance
 ------------------------
 # 👨‍💻 **Author**
 
-**Sajrudin Aalam**
-📍 B.Tech CSE, Graphic Era Hill University (2026)  
+**Sajrudin Aalam**  
+📍 B.Tech CSE (AI/ML), Graphic Era Hill University (2026)  
 🔗[LinkedIn Profile](https://www.linkedin.com/in/sajrudin-aalam-21b861287/)  
 📧 aalamsajrudin@gmail.com  
 
@@ -172,6 +172,7 @@ Age, Transaction_Amount, Account_Balance
 📍 B.E CS, International Centre of Excellence in Engineering & Management    
 🔗[LinkedIn Profile](https://www.linkedin.com/in/payal-dhokane-79967b294/)    
 📧 payaldhokane282@gmail.com  
+
 
 
 
