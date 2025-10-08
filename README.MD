@@ -95,7 +95,7 @@ Age, Transaction_Amount, Account_Balance
 
 2. **Synthetic Data Generation**
 
-    * Used Tabular CTGAN  to generate realistic synthetic transactions.
+    * Used EVAE Tabular to generate realistic synthetic transactions.
 
     * Merged synthetic and real data to create the Augmented Dataset.
 
@@ -174,6 +174,7 @@ Age, Transaction_Amount, Account_Balance
 📍 B.E CS, International Centre of Excellence in Engineering & Management    
 🔗[LinkedIn Profile](https://www.linkedin.com/in/payal-dhokane-79967b294/)    
 📧 payaldhokane282@gmail.com  
+
 
 
 
