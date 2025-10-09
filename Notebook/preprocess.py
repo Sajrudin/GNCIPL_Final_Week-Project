@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from preprocess import DateTimeExtractor, FrequencyEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
