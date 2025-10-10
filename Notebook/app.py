@@ -21,7 +21,7 @@ st.set_page_config(page_title="Fraud Detection System", page_icon="💳", layout
 # Try loading model and pipeline
 try:
     model = joblib.load(MODEL_PATH)
-    pipeline = joblib.load(PIPELINE_PATH)
+    preprocess = joblib.load(PIPELINE_PATH)
 except FileNotFoundError:
     st.error("Model or preprocessing pipeline not found. Please verify the file paths.")
     st.stop()
