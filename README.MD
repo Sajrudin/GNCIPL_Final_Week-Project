@@ -1,4 +1,4 @@
-# 🏦 Advancing Fraud Detection through CTGAN-Based Synthetic Transactions
+# 🏦 **FRAUDSENSE** : Advancing Fraud Detection through CTGAN-Based Synthetic Transactions
 
 This project focuses on enhancing fraud detection systems by generating privacy-preserving synthetic bank transactions using CTGAN (Conditional Tabular GAN) .
 The synthetic data augments real-world transactions to address class imbalance and data scarcity, leading to more robust and generalizable fraud detection models.
@@ -6,7 +6,7 @@ The synthetic data augments real-world transactions to address class imbalance a
 Generate privacy-preserving synthetic bank transaction data using CTGAN to improve fraud detection research and model benchmarking.     
 
 ---  
-Website Link (Live Action): https://synthetic-data-fraud-detection-ai-x14e.onrender.com/   
+Website Link (Live Action): [FraudSense](https://synthetic-data-fraud-detection-ai-x14e.onrender.com/)   
 ---  
 
 ## 📁 Folder Structure
@@ -176,6 +176,7 @@ Age, Transaction_Amount, Account_Balance
 📍 B.E CS, International Centre of Excellence in Engineering & Management    
 🔗[LinkedIn Profile](https://www.linkedin.com/in/payal-dhokane-79967b294/)    
 📧 payaldhokane282@gmail.com  
+
 
 
 
