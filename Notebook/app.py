@@ -1,12 +1,9 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import dill
 import os, sys
 from datetime import datetime, time
 import plotly.graph_objects as go
-
-
 
 
 # Add Notebook folder to system path
@@ -24,8 +21,7 @@ st.set_page_config(page_title="Fraud Detection System", page_icon="💳", layout
 # Try loading model and pipeline
 try:
     model = joblib.load(MODEL_PATH)
-    with open(PIPELINE_PATH, "rb") as f:
-        preprocess = dill.load(f)
+    pipeline = joblib.load(PIPELINE_PATH)
 except FileNotFoundError:
     st.error("Model or preprocessing pipeline not found. Please verify the file paths.")
     st.stop()

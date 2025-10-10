@@ -29,11 +29,17 @@ def extract_datetime_features(df):
         df_['Transaction_Month'] = df_['Transaction_Date'].dt.month
         df_['Transaction_Day'] = df_['Transaction_Date'].dt.day
         df_['Transaction_Weekday'] = df_['Transaction_Date'].dt.weekday
+
     if 'Transaction_Time' in df_.columns:
         df_['Transaction_Time'] = pd.to_datetime(df_['Transaction_Time'], format='%H:%M:%S', errors='coerce')
         df_['Transaction_Hour'] = df_['Transaction_Time'].dt.hour
         df_['Transaction_Minute'] = df_['Transaction_Time'].dt.minute
-        df_['Is_Night'] = df_['Transaction_Hour'].apply(lambda x: 1 if x>=22 or x<6 else 0)
+
+        def is_night(hour):
+            return 1 if hour >= 22 or hour < 6 else 0
+
+        df_['Is_Night'] = df_['Transaction_Hour'].apply(is_night)
+
     return df_[['Transaction_Year','Transaction_Month','Transaction_Day',
                 'Transaction_Weekday','Transaction_Hour','Transaction_Minute','Is_Night']]
 
