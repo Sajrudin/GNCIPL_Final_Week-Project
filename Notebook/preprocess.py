@@ -2,31 +2,24 @@ import pandas as pd
 import numpy as np
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransformer
 from sklearn.impute import SimpleImputer
-from sklearn.base import BaseEstimator, TransformerMixin
 
 # -----------------------------
 # Feature groups
 # -----------------------------
 numeric_features = ['Age', 'Transaction_Amount', 'Account_Balance']
-
-# High-cardinality IDs to be frequency encoded
 high_card_features = ['Customer_ID', 'Transaction_ID', 'Merchant_ID']
-
-# Low-cardinality categorical features (safe for one-hot)
 categorical_features = [
     'Gender', 'State', 'City',
     'Bank_Branch', 'Account_Type', 'Transaction_Type',
     'Merchant_Category', 'Transaction_Device',
     'Transaction_Location', 'Device_Type', 'Transaction_Currency'
 ]
-
-# Datetime features
 datetime_features = ['Transaction_Date', 'Transaction_Time']
 
 # -----------------------------
-# Custom transformer for datetime
+# Functions for custom transformations
 # -----------------------------
 def extract_datetime_features(df):
     df_ = df.copy()
@@ -44,34 +37,16 @@ def extract_datetime_features(df):
     return df_[['Transaction_Year','Transaction_Month','Transaction_Day',
                 'Transaction_Weekday','Transaction_Hour','Transaction_Minute','Is_Night']]
 
-class DateTimeExtractor(BaseEstimator, TransformerMixin):
-    def __init__(self, datetime_cols):
-        self.datetime_cols = datetime_cols
+def frequency_encode(df, columns):
+    df_ = df.copy()
+    for col in columns:
+        freq_map = df_[col].value_counts(normalize=True)
+        df_[col] = df_[col].map(freq_map).fillna(0)
+    return df_[columns]
 
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        return extract_datetime_features(X)
-
-# -----------------------------
-# Custom transformer for frequency encoding
-# -----------------------------
-class FrequencyEncoder(BaseEstimator, TransformerMixin):
-    def __init__(self, columns=None):
-        self.columns = columns
-        self.freq_maps = {}
-
-    def fit(self, X, y=None):
-        for col in self.columns:
-            self.freq_maps[col] = X[col].value_counts(normalize=True)
-        return self
-
-    def transform(self, X):
-        X_ = X.copy()
-        for col in self.columns:
-            X_[col] = X_[col].map(self.freq_maps[col]).fillna(0)
-        return X_[self.columns]
+# Wrappers for sklearn
+datetime_transformer_func = FunctionTransformer(extract_datetime_features)
+high_card_transformer_func = FunctionTransformer(frequency_encode, kw_args={'columns': high_card_features})
 
 # -----------------------------
 # Preprocessing pipelines
@@ -82,7 +57,7 @@ numeric_transformer = Pipeline([
 ])
 
 high_card_transformer = Pipeline([
-    ('freq_enc', FrequencyEncoder(columns=high_card_features))
+    ('freq_enc', high_card_transformer_func)
 ])
 
 categorical_transformer = Pipeline([
@@ -91,7 +66,7 @@ categorical_transformer = Pipeline([
 ])
 
 datetime_transformer = Pipeline([
-    ('extractor', DateTimeExtractor(datetime_features)),
+    ('extractor', datetime_transformer_func),
     ('imputer', SimpleImputer(strategy='median')),
     ('scaler', StandardScaler())
 ])
