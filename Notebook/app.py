@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from preprocess import DateTimeExtractor, FrequencyEncoder, fit_preprocess, transform
 import joblib
+import dill
 import os
 from datetime import datetime, time
 import plotly.graph_objects as go
@@ -22,7 +23,8 @@ PIPELINE_PATH = os.path.join(ROOT_DIR, "Model", "preprocess_pipeline.pkl")
 
 try:
     model = joblib.load(MODEL_PATH)
-    preprocess = joblib.load(PIPELINE_PATH)
+    with open(PIPELINE_PATH, "rb") as f:
+        preprocess = dill.load(f)
 except FileNotFoundError:
     st.error("❌ Model or preprocessing pipeline not found. Please verify the file paths.")
     st.stop()
