@@ -1,38 +1,42 @@
 import streamlit as st
 import pandas as pd
-from preprocess import DateTimeExtractor, FrequencyEncoder, fit_preprocess, transform
 import joblib
 import dill
-import os
+import os, sys
 from datetime import datetime, time
 import plotly.graph_objects as go
 
-# -----------------------------
-# Load Model and Preprocessing
-# -----------------------------
-# Get the directory of the current file (app.py)
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Go one level up to the root of the repo
-ROOT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 
-# Construct paths relative to the repo root
+
+# Add Notebook folder to system path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Define ROOT directory (one level up from Notebook)
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+# Paths to model and pipeline
 MODEL_PATH = os.path.join(ROOT_DIR, "Model", "best_model_augmented.pkl")
 PIPELINE_PATH = os.path.join(ROOT_DIR, "Model", "preprocess_pipeline.pkl")
 
+st.set_page_config(page_title="Fraud Detection System", page_icon="💳", layout="wide")
 
+# Try loading model and pipeline
 try:
     model = joblib.load(MODEL_PATH)
     with open(PIPELINE_PATH, "rb") as f:
         preprocess = dill.load(f)
 except FileNotFoundError:
-    st.error("❌ Model or preprocessing pipeline not found. Please verify the file paths.")
+    st.error("Model or preprocessing pipeline not found. Please verify the file paths.")
     st.stop()
+except Exception as e:
+    st.error(f" Error loading model or pipeline: {e}")
+    st.stop()
+
 
 # -----------------------------
 # Streamlit App Config
 # -----------------------------
-st.set_page_config(page_title="Fraud Detection System", page_icon="💳", layout="wide")
 
 st.title("💳 Fraud Detection System")
 st.markdown("Check if a transaction is **Fraudulent** or **Legit** using the trained ML model.")
